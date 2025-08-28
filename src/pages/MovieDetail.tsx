@@ -237,20 +237,6 @@ const MovieDetail: React.FC = () => {
         {renderSection("Stream", flatrate)}
         {renderSection("Rent", rent)}
         {renderSection("Buy", buy)}
-        
-        {/* {link && (
-          <div className="pt-4 border-t">
-            <a 
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline flex items-center gap-2 justify-center"
-            >
-              <ExternalLink className="w-4 h-4" />
-              View all options on JustWatch
-            </a>
-          </div>
-        )} */}
       </div>
     );
   };
@@ -305,49 +291,93 @@ const MovieDetail: React.FC = () => {
           Back
         </Button>
 
-        {/* Movie poster/trailer section */}
-        <div className="relative">
-          {videoId && showTrailer ? (
-            <div className="aspect-video rounded-lg overflow-hidden shadow-intense">
-              <YouTube
-                videoId={videoId}
-                opts={{
-                  width: '100%',
-                  height: '100%',
-                  playerVars: {
-                    autoplay: 1,
-                    controls: 1,
-                    rel: 0,
-                  },
-                }}
-                className="w-full h-full"
-              />
-            </div>
-          ) : (
-            <div className="aspect-video relative rounded-lg overflow-hidden shadow-intense">
-              <img
-                src={movie.Poster}
-                alt={movie.Title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-darker-surface/50 flex items-center justify-center">
-                {videoId && (
-                  <Button
-                    onClick={() => setShowTrailer(true)}
-                    className="bg-glass hover:bg-primary/80 border border-white/20 backdrop-blur-md text-white w-11/12 sm:w-auto"
-                    size="lg"
-                  >
-                    <Play className="w-6 h-6 mr-2" />
-                    Watch Trailer
-                  </Button>
-                )}
+        {/* Top section: Trailer + Actions (side by side on laptop) */}
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Trailer section - reduced size */}
+          <div className="lg:col-span-2">
+            {videoId && showTrailer ? (
+              <div className="aspect-video rounded-lg overflow-hidden shadow-intense">
+                <YouTube
+                  videoId={videoId}
+                  opts={{
+                    width: '100%',
+                    height: '100%',
+                    playerVars: {
+                      autoplay: 1,
+                      controls: 1,
+                      rel: 0,
+                    },
+                  }}
+                  className="w-full h-full"
+                />
               </div>
+            ) : (
+              <div className="aspect-video relative rounded-lg overflow-hidden shadow-intense">
+                <img
+                  src={movie.Poster}
+                  alt={movie.Title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-darker-surface/50 flex items-center justify-center">
+                  {videoId && (
+                    <Button
+                      onClick={() => setShowTrailer(true)}
+                      className="bg-glass hover:bg-primary/80 border border-white/20 backdrop-blur-md text-white w-11/12 sm:w-auto"
+                      size="lg"
+                    >
+                      <Play className="w-6 h-6 mr-2" />
+                      Watch Trailer
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions sidebar - positioned beside trailer */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="bg-card/50 rounded-lg p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Actions</h3>
+              
+              {username ? (
+                <Button
+                  onClick={handleLike}
+                  disabled={isLiking}
+                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  {isLiking ? 'Adding...' : 'Add to Favorites'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Login to Like
+                </Button>
+              )}
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                    Watch Now
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
+                  </DialogHeader>
+                  {renderStreamingOptions()}
+                </DialogContent>
+              </Dialog>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Movie details grid */}
+        {/* Movie details section */}
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Left side: Movie info, overview, cast */}
           <div className="lg:col-span-2 space-y-6">
             <div className="space-y-3 sm:space-y-4">
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground text-center sm:text-left">
@@ -432,45 +462,8 @@ const MovieDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar for larger screens */}
-          <div className="hidden lg:block space-y-6">
-            <div className="bg-card/50 rounded-lg p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Actions</h3>
-              
-              {username ? (
-                <Button
-                  onClick={handleLike}
-                  disabled={isLiking}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  {isLiking ? 'Adding...' : 'Add to Favorites'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Login to Like
-                </Button>
-              )}
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                    Watch Now
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
-                  </DialogHeader>
-                  {renderStreamingOptions()}
-                </DialogContent>
-              </Dialog>
-            </div>
-
+          {/* Right side: Movie poster (positioned beside cast) */}
+          <div className="lg:col-span-1">
             <div className="bg-card/50 rounded-lg p-6">
               <img
                 src={movie.Poster}
@@ -481,7 +474,7 @@ const MovieDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile actions */}
+        {/* Mobile actions - only shown on mobile */}
         <div className="lg:hidden space-y-4">
           {username ? (
             <Button
@@ -515,12 +508,6 @@ const MovieDetail: React.FC = () => {
               {renderStreamingOptions()}
             </DialogContent>
           </Dialog>
-
-          <img
-            src={movie.Poster}
-            alt={movie.Title}
-            className="w-full rounded-lg shadow-movie-card"
-          />
         </div>
       </div>
     </div>
