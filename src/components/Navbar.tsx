@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Film, User, LogOut, Heart } from 'lucide-react';
+import { Search, User, LogOut, Heart } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,11 @@ const Navbar: React.FC = () => {
             className="flex items-center space-x-2 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <Film className="w-8 h-8 text-primary" />
+            <img 
+              src="/favicon.ico" 
+              alt="Curate Logo" 
+              className="w-8 h-8 rounded-lg"
+            />
             <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Curate
             </span>

@@ -55,6 +55,11 @@ const MovieDetail: React.FC = () => {
   const [isLiking, setIsLiking] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     if (id) {
       fetchMovieDetails(id);
@@ -293,17 +298,17 @@ const MovieDetail: React.FC = () => {
 
         {/* Desktop Layout */}
         <div className="hidden lg:block">
-          {/* Top row: Trailer + Poster */}
+          {/* Top row: Trailer + Poster with same height */}
           <div className="grid lg:grid-cols-5 gap-6 mb-8">
             {/* Trailer section */}
             <div className="lg:col-span-3">
               {videoId && showTrailer ? (
-                <div className="aspect-video rounded-lg overflow-hidden shadow-intense">
+                <div className="h-[500px] rounded-lg overflow-hidden shadow-intense">
                   <YouTube
                     videoId={videoId}
                     opts={{
                       width: '100%',
-                      height: '100%',
+                      height: '500',
                       playerVars: {
                         autoplay: 1,
                         controls: 1,
@@ -314,7 +319,7 @@ const MovieDetail: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="aspect-video relative rounded-lg overflow-hidden shadow-intense">
+                <div className="h-[500px] relative rounded-lg overflow-hidden shadow-intense">
                   <img
                     src={movie.Poster}
                     alt={movie.Title}
@@ -336,13 +341,13 @@ const MovieDetail: React.FC = () => {
               )}
             </div>
 
-            {/* Poster section */}
+            {/* Poster section - same height as trailer */}
             <div className="lg:col-span-2">
-              <div className="bg-card/50 rounded-lg p-6">
+              <div className="bg-card/50 rounded-lg p-6 h-[500px] flex items-center">
                 <img
                   src={movie.Poster}
                   alt={movie.Title}
-                  className="w-full rounded-lg shadow-movie-card"
+                  className="w-full h-full object-contain rounded-lg shadow-movie-card"
                 />
               </div>
             </div>

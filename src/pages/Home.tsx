@@ -31,13 +31,12 @@ const GENRE_ICONS: Record<string, React.ReactNode> = {
   Action: <Sword />,
   Comedy: <Laugh />,
   Romance: <Heart />,
-  Crime: <Gavel />,     // changed
-  Horror: <Skull />,    // changed (or Ghost)
+  Crime: <Gavel />,
+  Horror: <Skull />,
   Mystery: <Search />,
   Adventure: <Compass />,
   Default: <Film />
 };
-
 
 const SUGGESTION_BATCH = 18;
 
@@ -46,7 +45,7 @@ const SUGGESTION_BATCH = 18;
 interface MovieCarouselProps {
   movies: TrendingMovie[];
   favourites: number[];
-  onLike: (id: number) => void;
+  onLike: (id: number, event?: React.MouseEvent) => void;
 }
 
 const MovieCarousel: React.FC<MovieCarouselProps> = ({
@@ -88,7 +87,7 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({
         <div ref={ref} className="flex space-x-6 overflow-hidden py-4 px-10">
           {movies.map(m => (
             <div
-              key={m.ID} // Stable key - removed favourites dependency
+              key={m.ID}
               className="flex-shrink-0 w-56 lg:w-64 aspect-[2/3]"
             >
               <MovieCard
@@ -107,7 +106,7 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({
       <div className="flex space-x-4 overflow-x-auto scrollbar-hide py-4 px-2 lg:hidden">
         {movies.map(m => (
           <div
-            key={m.ID} // Stable key - removed favourites dependency
+            key={m.ID}
             className="flex-shrink-0 w-40 sm:w-48 md:w-56 aspect-[2/3]"
           >
             <MovieCard
@@ -157,7 +156,7 @@ interface MovieSectionProps {
   title: string;
   movies: TrendingMovie[];
   favourites: number[];
-  onLike: (id: number) => void;
+  onLike: (id: number, event?: React.MouseEvent) => void;
 }
 
 const MovieSection: React.FC<MovieSectionProps> = ({
@@ -188,7 +187,7 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [favouritesLoaded, setFavouritesLoaded] = useState(false);
-  const [isLiking, setIsLiking] = useState(false); // New loading state
+  const [isLiking, setIsLiking] = useState(false);
 
   /* ───────── load data ───────── */
   useEffect(() => {
@@ -269,7 +268,6 @@ const Home: React.FC = () => {
       setSuggestions(res.data?.suggestions ?? res.data ?? []);
     } catch (error) {
       console.error('Suggestions fetch error:', error);
-      // Don't show error toast for suggestions - it's not critical
       setSuggestions([]);
     } finally {
       setSuggestionsLoading(false);
@@ -296,45 +294,21 @@ const Home: React.FC = () => {
   };
 
   /* ───────── like handler ───────── */
-  const handleLike = async (movieId: number) => {
-    if (!username || isLiking) return;
+  const handleMovieUpdate = async (movieId: number) => {
+    console.log('Movie liked:', movieId);
     
-    console.log('Liking movie:', movieId);
-    setIsLiking(true);
+    // Just update favourites optimistically - NO API call here
+    setFavourites(prev => [...prev, movieId]);
     
-    try {
-      await movieApi.likeMovie(username, movieId);
-      
-      // Update favourites optimistically
-      setFavourites(prev => [...prev, movieId]);
-      
-      // Show success message
-      toast({ 
-        title: 'Success', 
-        description: 'Movie added to your favourites!' 
-      });
-      
-      // Refresh suggestions in background
-      console.log('Refreshing suggestions...');
-      setSuggestionsLoading(true);
-      await fetchSuggestions();
-      
-    } catch (err: any) {
-      console.error('Failed to like movie:', err);
-      const msg = err.response?.data?.error || 'Failed to like movie';
-      toast({ 
-        title: 'Error', 
-        description: msg, 
-        variant: 'destructive' 
-      });
-    } finally {
-      setIsLiking(false);
-    }
+    // Refresh suggestions in background
+    console.log('Refreshing suggestions...');
+    setSuggestionsLoading(true);
+    await fetchSuggestions();
   };
 
   const isDataLoaded = !isLoading && favouritesLoaded;
 
-  /* ───────── suggestions grid (needs access to local state) ───────── */
+  /* ───────── suggestions grid ───────── */
   const SuggestionsCarousel: React.FC<{ suggestions: Suggestion[] }> = ({
     suggestions
   }) => (
@@ -342,17 +316,14 @@ const Home: React.FC = () => {
       {/* desktop */}
       <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {suggestions.map(s => (
-          <div
-            key={s.ID} // Stable key
-            className="relative aspect-[2/3]"
-          >
+          <div key={s.ID} className="relative aspect-[2/3]">
             <MovieCard
               id={s.ID}
               poster={s.Poster}
               title={s.Title}
               showLikeButton
               isLiked={favourites.includes(s.ID)}
-              onLike={() => handleLike(s.ID)}
+              onLike={() => handleMovieUpdate(s.ID)} // 🔥 Use new function
             />
           </div>
         ))}
@@ -361,23 +332,22 @@ const Home: React.FC = () => {
       {/* mobile */}
       <div className="flex space-x-4 overflow-x-auto scrollbar-hide py-4 px-2 lg:hidden">
         {suggestions.map(s => (
-          <div
-            key={s.ID} // Stable key
-            className="flex-shrink-0 w-40 sm:w-48 md:w-56 aspect-[2/3]"
-          >
+          <div key={s.ID} className="flex-shrink-0 w-40 sm:w-48 md:w-56 aspect-[2/3]">
             <MovieCard
               id={s.ID}
               poster={s.Poster}
               title={s.Title}
               showLikeButton
               isLiked={favourites.includes(s.ID)}
-              onLike={() => handleLike(s.ID)}
+              onLike={() => handleMovieUpdate(s.ID)} // 🔥 Use new function
             />
           </div>
         ))}
       </div>
     </>
   );
+
+
 
   /* ───────── loading placeholder ───────── */
   if (!isDataLoaded) {
@@ -413,7 +383,7 @@ const Home: React.FC = () => {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Unlock your next binge-worthy series with AI-powered, handpicked recommendations on Curate
+            Handpicked recommendations on Curate
           </p>
         </div>
 
@@ -430,7 +400,6 @@ const Home: React.FC = () => {
             <Header
               icon={<Sparkles />}
               title="Just For You"
-              // extra={`(${suggestions.length} recommendations)`}
             />
             <SuggestionsCarousel suggestions={suggestions} />
           </section>
@@ -443,7 +412,7 @@ const Home: React.FC = () => {
             title="Trending in English"
             movies={englishMovies}
             favourites={favourites}
-            onLike={handleLike}
+            onLike={(movieId) => handleMovieUpdate(movieId)}
           />
         )}
 
@@ -453,7 +422,7 @@ const Home: React.FC = () => {
             title="Trending in Hindi"
             movies={hindiMovies}
             favourites={favourites}
-            onLike={handleLike}
+            onLike={(movieId) => handleMovieUpdate(movieId)}
           />
         )}
 
@@ -466,7 +435,7 @@ const Home: React.FC = () => {
                 title={`Trending in ${g}`}
                 movies={genreMovies[g]}
                 favourites={favourites}
-                onLike={handleLike}
+                onLike={(movieId) => handleMovieUpdate(movieId)}
               />
             )
         )}
