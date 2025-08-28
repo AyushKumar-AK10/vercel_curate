@@ -291,10 +291,196 @@ const MovieDetail: React.FC = () => {
           Back
         </Button>
 
-        {/* Top section: Trailer + Actions (side by side on laptop) */}
-        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Trailer section - reduced size */}
-          <div className="lg:col-span-2">
+        {/* Desktop Layout */}
+        <div className="hidden lg:block">
+          {/* Top row: Trailer + Poster */}
+          <div className="grid lg:grid-cols-5 gap-6 mb-8">
+            {/* Trailer section */}
+            <div className="lg:col-span-3">
+              {videoId && showTrailer ? (
+                <div className="aspect-video rounded-lg overflow-hidden shadow-intense">
+                  <YouTube
+                    videoId={videoId}
+                    opts={{
+                      width: '100%',
+                      height: '100%',
+                      playerVars: {
+                        autoplay: 1,
+                        controls: 1,
+                        rel: 0,
+                      },
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video relative rounded-lg overflow-hidden shadow-intense">
+                  <img
+                    src={movie.Poster}
+                    alt={movie.Title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-darker-surface/50 flex items-center justify-center">
+                    {videoId && (
+                      <Button
+                        onClick={() => setShowTrailer(true)}
+                        className="bg-glass hover:bg-primary/80 border border-white/20 backdrop-blur-md text-white"
+                        size="lg"
+                      >
+                        <Play className="w-6 h-6 mr-2" />
+                        Watch Trailer
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Poster section */}
+            <div className="lg:col-span-2">
+              <div className="bg-card/50 rounded-lg p-6">
+                <img
+                  src={movie.Poster}
+                  alt={movie.Title}
+                  className="w-full rounded-lg shadow-movie-card"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom row: Movie Info + Actions */}
+          <div className="grid lg:grid-cols-5 gap-6">
+            {/* Movie details */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="space-y-3 sm:space-y-4">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground">
+                  {movie.Title}
+                </h1>
+                
+                <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm sm:text-base">
+                  {movie.Runtime && (
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4" />
+                      <span>{movie.Runtime} min</span>
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <Globe className="w-4 h-4" />
+                    <span>{movie.Language.toUpperCase()}</span>
+                  </div>
+                  {movie['Vote Average'] && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-yellow-500">★</span>
+                      <span>{movie['Vote Average'].toFixed(1)}/10</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {genres.map((genre) => (
+                    <Badge key={genre} variant="secondary" className="bg-secondary/80 text-sm">
+                      {genre}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2 sm:space-y-3">
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Overview</h2>
+                <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
+                  {movie.Overview || "No overview available for this movie."}
+                </p>
+              </div>
+
+              {/* Cast section */}
+              {movie.Cast && movie.Cast.length > 0 && (
+                <div className="space-y-3 sm:space-y-4">
+                  <h2 className="text-lg sm:text-xl font-semibold text-foreground">Cast</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                    {movie.Cast.slice(0, 10).map((actor, index) => (
+                      <div key={index} className="text-center space-y-2">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full overflow-hidden bg-secondary/50">
+                          {actor.photo ? (
+                            <img
+                              src={actor.photo}
+                              alt={actor.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling!.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div 
+                            className="w-full h-full flex items-center justify-center"
+                            style={{ display: actor.photo ? 'none' : 'flex' }}
+                          >
+                            <span className="text-xl sm:text-2xl text-muted-foreground">
+                              {actor.name.charAt(0)}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs sm:text-sm text-foreground font-medium leading-tight">
+                          {actor.name}
+                        </p>
+                        {actor.character && (
+                          <p className="text-xs text-muted-foreground leading-tight">
+                            {actor.character}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Actions section - extends to right of cast */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card/50 rounded-lg p-6 space-y-4">
+                <h3 className="text-lg font-semibold text-foreground">Actions</h3>
+                
+                {username ? (
+                  <Button
+                    onClick={handleLike}
+                    disabled={isLiking}
+                    className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    {isLiking ? 'Adding...' : 'Add to Favorites'}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => navigate('/login')}
+                    className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Login to Like
+                  </Button>
+                )}
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                      Watch Now
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
+                    </DialogHeader>
+                    {renderStreamingOptions()}
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="lg:hidden space-y-6">
+          {/* Trailer section */}
+          <div className="relative">
             {videoId && showTrailer ? (
               <div className="aspect-video rounded-lg overflow-hidden shadow-intense">
                 <YouTube
@@ -322,7 +508,7 @@ const MovieDetail: React.FC = () => {
                   {videoId && (
                     <Button
                       onClick={() => setShowTrailer(true)}
-                      className="bg-glass hover:bg-primary/80 border border-white/20 backdrop-blur-md text-white w-11/12 sm:w-auto"
+                      className="bg-glass hover:bg-primary/80 border border-white/20 backdrop-blur-md text-white w-11/12"
                       size="lg"
                     >
                       <Play className="w-6 h-6 mr-2" />
@@ -334,76 +520,33 @@ const MovieDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Actions sidebar - positioned beside trailer */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-card/50 rounded-lg p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Actions</h3>
-              
-              {username ? (
-                <Button
-                  onClick={handleLike}
-                  disabled={isLiking}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  {isLiking ? 'Adding...' : 'Add to Favorites'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Login to Like
-                </Button>
-              )}
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                    Watch Now
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
-                  </DialogHeader>
-                  {renderStreamingOptions()}
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </div>
-
-        {/* Movie details section */}
-        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Left side: Movie info, overview, cast */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Movie details */}
+          <div className="space-y-6">
             <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground text-center sm:text-left">
+              <h1 className="text-2xl sm:text-4xl font-bold text-foreground text-center">
                 {movie.Title}
               </h1>
               
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 text-muted-foreground text-sm sm:text-base">
                 {movie.Runtime && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <Clock className="w-4 h-4" />
                     <span>{movie.Runtime} min</span>
                   </div>
                 )}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center sm:justify-start space-x-2">
                   <Globe className="w-4 h-4" />
                   <span>{movie.Language.toUpperCase()}</span>
                 </div>
                 {movie['Vote Average'] && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-center sm:justify-start space-x-2">
                     <span className="text-yellow-500">★</span>
                     <span>{movie['Vote Average'].toFixed(1)}/10</span>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 {genres.map((genre) => (
                   <Badge key={genre} variant="secondary" className="bg-secondary/80 text-sm">
                     {genre}
@@ -413,8 +556,8 @@ const MovieDetail: React.FC = () => {
             </div>
 
             <div className="space-y-2 sm:space-y-3">
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground">Overview</h2>
-              <p className="text-muted-foreground leading-relaxed text-base sm:text-lg text-center sm:text-left">
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground text-center sm:text-left">Overview</h2>
+              <p className="text-muted-foreground leading-relaxed text-base text-center sm:text-left">
                 {movie.Overview || "No overview available for this movie."}
               </p>
             </div>
@@ -422,11 +565,11 @@ const MovieDetail: React.FC = () => {
             {/* Cast section */}
             {movie.Cast && movie.Cast.length > 0 && (
               <div className="space-y-3 sm:space-y-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Cast</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                  {movie.Cast.slice(0, 10).map((actor, index) => (
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground text-center sm:text-left">Cast</h2>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                  {movie.Cast.slice(0, 8).map((actor, index) => (
                     <div key={index} className="text-center space-y-2">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full overflow-hidden bg-secondary/50">
+                      <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-secondary/50">
                         {actor.photo ? (
                           <img
                             src={actor.photo}
@@ -442,12 +585,12 @@ const MovieDetail: React.FC = () => {
                           className="w-full h-full flex items-center justify-center"
                           style={{ display: actor.photo ? 'none' : 'flex' }}
                         >
-                          <span className="text-xl sm:text-2xl text-muted-foreground">
+                          <span className="text-xl text-muted-foreground">
                             {actor.name.charAt(0)}
                           </span>
                         </div>
                       </div>
-                      <p className="text-xs sm:text-sm text-foreground font-medium leading-tight">
+                      <p className="text-xs text-foreground font-medium leading-tight">
                         {actor.name}
                       </p>
                       {actor.character && (
@@ -462,9 +605,43 @@ const MovieDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Right side: Movie poster (positioned beside cast) */}
-          <div className="lg:col-span-1">
-            <div className="bg-card/50 rounded-lg p-6">
+          {/* Mobile actions */}
+          <div className="space-y-4">
+            {username ? (
+              <Button
+                onClick={handleLike}
+                disabled={isLiking}
+                className="w-full bg-gradient-primary hover:opacity-90 text-white"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                {isLiking ? 'Adding...' : 'Add to Favorites'}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate('/login')}
+                className="w-full bg-gradient-primary hover:opacity-90 text-white"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Login to Like
+              </Button>
+            )}
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                  Watch Now
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
+                </DialogHeader>
+                {renderStreamingOptions()}
+              </DialogContent>
+            </Dialog>
+
+            {/* Small mobile poster */}
+            <div className="w-48 mx-auto">
               <img
                 src={movie.Poster}
                 alt={movie.Title}
@@ -472,42 +649,6 @@ const MovieDetail: React.FC = () => {
               />
             </div>
           </div>
-        </div>
-
-        {/* Mobile actions - only shown on mobile */}
-        <div className="lg:hidden space-y-4">
-          {username ? (
-            <Button
-              onClick={handleLike}
-              disabled={isLiking}
-              className="w-full bg-gradient-primary hover:opacity-90 text-white"
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              {isLiking ? 'Adding...' : 'Add to Favorites'}
-            </Button>
-          ) : (
-            <Button
-              onClick={() => navigate('/login')}
-              className="w-full bg-gradient-primary hover:opacity-90 text-white"
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              Login to Like
-            </Button>
-          )}
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                Watch Now
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Where to Watch "{movie.Title}"</DialogTitle>
-              </DialogHeader>
-              {renderStreamingOptions()}
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </div>
